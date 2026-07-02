@@ -1,0 +1,7 @@
+Tomat;02/07/2026;1,5;yes
+Chili;01/07/2026;1;no
+Blaber;30/06/2026;4;no
+Lavendler;30/06/2026;4;no
+Orkide;01/07/2026;1;
+Orkide;24/06/2026;1;no
+Violin;01/07/2026;2;no

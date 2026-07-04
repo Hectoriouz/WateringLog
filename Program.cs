@@ -1,5 +1,6 @@
 ﻿
 using System.Security.Cryptography.X509Certificates;
+using System.Linq;
 
 string filePath = "wateringlog.txt";
 
@@ -119,7 +120,8 @@ void ViewWateringLogs()
 
     if (File.Exists(filePath))
     {
-        string[] logEntries = File.ReadAllLines(filePath);
+        List<string> logEntries = File.ReadAllLines(filePath).ToList();
+        
         foreach (string entry in logEntries)
         {
             DisplayLog(entry);
@@ -152,11 +154,11 @@ void ViewLatestWateringLog()
 
     if (File.Exists(filePath))
         {
-            string[] logEntries = File.ReadAllLines(filePath);
+            List<string> logEntries = File.ReadAllLines(filePath).ToList();
 
-            if (logEntries.Length > 0)
+            if (logEntries.Count > 0)
                 {
-                    int lastIndex = logEntries.Length - 1;
+                    int lastIndex = logEntries.Count - 1;
                     string latestLog = logEntries[lastIndex];
 
                     DisplayLog(latestLog);
@@ -197,7 +199,7 @@ void SearchPlant()
 
     if (File.Exists(filePath))
     {
-        string[] logEntries = File.ReadAllLines(filePath);
+        List<string> logEntries = File.ReadAllLines(filePath).ToList();
         foreach (string entry in logEntries)
         {
             string[] entryParts = entry.Split(';');

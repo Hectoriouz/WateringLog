@@ -11,3 +11,6 @@ obj/
 
 # macOS
 .DS_Store
+
+# Personal data
+wateringlog.txt

@@ -44,6 +44,7 @@ while (isRunning == true)
     }
 }
 
+// Menu
 string ShowMenu()
 {
     // Vis menuen
@@ -66,7 +67,7 @@ string ShowMenu()
     return choice;
 }
 
-
+// Log new watering
 void LogWatering()
 {
 // Log new watering
@@ -142,6 +143,7 @@ void LogWatering()
     PressEnterToContinue();
 }    
 
+// View watering logs
 void ViewWateringLogs()
 {
     // View watering logs
@@ -178,6 +180,7 @@ void PressEnterToContinue()
     Console.ReadLine();
 }
 
+// View latest watering log
 void ViewLatestWateringLog()
 {
     IntroTitle();
@@ -207,6 +210,7 @@ void ViewLatestWateringLog()
         }
 }
 
+// Display log entry
 void DisplayLog(string log)
 {
     string[] entryParts = log.Split(';');
@@ -219,6 +223,7 @@ void DisplayLog(string log)
     Console.WriteLine("----------------------------------");
 }
 
+// Search for specific plant logs
 void SearchPlant()
 {
     IntroTitle();
@@ -256,6 +261,7 @@ void SearchPlant()
     }
 }
 
+// Delete watering log
 void DeleteWateringLog()
 {
     IntroTitle();

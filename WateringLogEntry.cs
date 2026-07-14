@@ -1,11 +1,10 @@
 
 
-namespace WateringLog
-{
+using System;
+
     public class WateringLogEntry
     {
         // Properties
-
         private string plantName;
         public string PlantName
         {
@@ -24,8 +23,8 @@ namespace WateringLog
         }
 
 
-        private int waterAmount;
-        public int WaterAmount
+        private double waterAmount;
+        public double WaterAmount
         {
         get { return waterAmount; }
         set 
@@ -68,11 +67,11 @@ namespace WateringLog
     
 
         // Constructor
-        public WateringLogEntry(string plantName, int waterAmount, DateTime wateringDate, bool fertilizerUsed)
+        public WateringLogEntry(string plantName, DateTime wateringDate, double waterAmount, bool fertilizerUsed)
         {
             PlantName = plantName;
-            WaterAmount = waterAmount;
             WateringDate = wateringDate;
+            WaterAmount = waterAmount;
             FertilizerUsed = fertilizerUsed;
         }
 
@@ -81,5 +80,18 @@ namespace WateringLog
         {
             return $"{PlantName};{WateringDate.ToString("yyyy-MM-dd HH:mm:ss")};{WaterAmount};{FertilizerUsed}";
         }
+
+        // Method to parse a string back into a WateringLogEntry object
+        public static WateringLogEntry Parse (string line)
+        {
+            string[] logParts = line.Split(';');
+            WateringLogEntry entry = new WateringLogEntry(
+                logParts[0], 
+                DateTime.Parse(logParts[1]),
+                double.Parse(logParts[2]),  
+                bool.Parse(logParts[3])
+            );
+            return entry;
+        }
     }
-}
+

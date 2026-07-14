@@ -1,6 +1,7 @@
 ﻿
 using System.Security.Cryptography.X509Certificates;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 string filePath = "wateringlog.txt";
 
@@ -135,12 +136,24 @@ void LogWatering()
         Console.WriteLine("Fertilizer Used: No");
         }
     Console.WriteLine("==================================");
-    
 
-    string logEntry = $"{plantName};{dateInput};{waterAmount};{fertilizerInput}{Environment.NewLine}";
-    File.AppendAllText(filePath, logEntry);
+
+    List<WateringLogEntry> logEntries = LoadLogEntries();
+
+    WateringLogEntry entry = new WateringLogEntry(
+        plantName, 
+        DateTime.Parse(dateInput),
+        int.Parse(waterAmountInput),  
+        fertilizerInput.ToLower() == "yes"
+    );
+
+    logEntries.Add(entry);
+
+    SaveLogEntries(logEntries);
+
     Console.WriteLine("Log saved to file!");
     PressEnterToContinue();
+    
 }    
 
 // View watering logs
@@ -150,21 +163,13 @@ void ViewWateringLogs()
     IntroTitle();
     Console.WriteLine("\n");
 
-    if (File.Exists(filePath))
-    {
-        List<string> logEntries = File.ReadAllLines(filePath).ToList();
-        
-        foreach (string entry in logEntries)
+        List<WateringLogEntry> logEntries = LoadLogEntries();
+
+        foreach (WateringLogEntry entry in logEntries)
         {
             DisplayLog(entry);
         }
         PressEnterToContinue();
-    }
-    else
-    {
-        Console.WriteLine("No watering logs found.");
-        PressEnterToContinue();
-    }
 }
 
 void IntroTitle()
@@ -185,62 +190,93 @@ void ViewLatestWateringLog()
 {
     IntroTitle();
 
-    if (File.Exists(filePath))
-        {
-            List<string> logEntries = File.ReadAllLines(filePath).ToList();
+    List<WateringLogEntry> logEntries = LoadLogEntries();
 
-            if (logEntries.Count > 0)
-                {
-                    int lastIndex = logEntries.Count - 1;
-                    string latestLog = logEntries[lastIndex];
+    if (logEntries.Count > 0)
+    {
+        int lastIndex = logEntries.Count - 1;
+        WateringLogEntry latestLog = logEntries[lastIndex];
 
-                    DisplayLog(latestLog);
-                    PressEnterToContinue();
-                }
-            else
-                {
-                    Console.WriteLine("No watering logs found.");
-                    PressEnterToContinue();
-                }
-        }
+        DisplayLog(latestLog);
+        PressEnterToContinue();
+    }
     else
-        {
-            Console.WriteLine("No watering logs found.");
-            PressEnterToContinue();
-        }
+    {
+        Console.WriteLine("No watering logs found.");
+        PressEnterToContinue();
+    }
+
 }
 
 // Display log entry
-void DisplayLog(string log)
+void DisplayLog(WateringLogEntry entry)
 {
-    string[] entryParts = log.Split(';');
-
     Console.WriteLine("----------------------------------");
-    Console.WriteLine($"Plant Name: {entryParts[0]}");
-    Console.WriteLine($"Date Watered: {entryParts[1]}");
-    Console.WriteLine($"Amount of Water Used: {entryParts[2]} liters");
-    Console.WriteLine($"Fertilizer Used: {entryParts[3]}");
+    Console.WriteLine($"Plant Name: {entry.PlantName}");
+    Console.WriteLine($"Date Watered: {entry.WateringDate}");
+    Console.WriteLine($"Amount of Water Used: {entry.WaterAmount} liters");
+    Console.WriteLine($"Fertilizer Used: {entry.FertilizerUsed}");
     Console.WriteLine("----------------------------------");
 }
+
+// Get list of watering log entries
+List<WateringLogEntry> LoadLogEntries()
+{
+    if (File.Exists(filePath))
+    {
+        List<WateringLogEntry> logEntries = new List<WateringLogEntry>();
+
+        foreach (string line in File.ReadAllLines(filePath))
+        {   
+            WateringLogEntry lineObject = WateringLogEntry.Parse(line);
+            logEntries.Add(lineObject);
+        }
+        return logEntries;
+    }
+    else
+    {
+        Console.WriteLine("No watering logs found.");
+        PressEnterToContinue();
+        List<WateringLogEntry> logEntries = new List<WateringLogEntry>();
+        return logEntries;
+    }
+}
+
+// Save list of watering log entries
+void SaveLogEntries(List<WateringLogEntry> logEntries)
+{
+    List<string> newList = new List<string>();
+
+    foreach (WateringLogEntry entry in logEntries)
+    {
+        string listItem = entry.ToString();
+        newList.Add(listItem);
+    }
+
+    File.WriteAllLines(filePath, newList);
+}
+
 
 // Search for specific plant logs
 void SearchPlant()
 {
     IntroTitle();
-    Console.WriteLine("Enter the name of the plant: ");
-    string userSearch = Console.ReadLine() ?? "";
-
     bool foundPlant = false;
+    List<WateringLogEntry> logEntries = LoadLogEntries();
 
-    if (File.Exists(filePath))
+    while (!foundPlant)
     {
-        List<string> logEntries = File.ReadAllLines(filePath).ToList();
-        foreach (string entry in logEntries)
+        Console.WriteLine("Enter the name of the plant: ");
+        Console.WriteLine("\nType 0 to go back");
+        string userSearch = Console.ReadLine() ?? "";
+        if (userSearch == "0")
         {
-            string[] entryParts = entry.Split(';');
-            string plantName = entryParts[0];
+            return;
+        }
 
-            if (plantName.ToLower() == userSearch.ToLower())
+        foreach (WateringLogEntry entry in logEntries)
+        {
+            if (entry.PlantName.ToLower() == userSearch.ToLower())
             {
                 DisplayLog(entry);
                 foundPlant = true;
@@ -249,16 +285,11 @@ void SearchPlant()
 
         if (!foundPlant)
         {
-            Console.WriteLine("No logs found for that plant");
+            Console.WriteLine("No logs found for that plant.");
         }
-        
-        PressEnterToContinue();
-    }
-        else
-    {
-        Console.WriteLine("No watering logs found.");
-        PressEnterToContinue();
-    }
+
+    }   
+    PressEnterToContinue();
 }
 
 // Delete watering log
@@ -266,20 +297,13 @@ void DeleteWateringLog()
 {
     IntroTitle();
 
-    if (!File.Exists(filePath))
-    {
-        Console.WriteLine("No watering logs found.");
-        PressEnterToContinue();
-        return;
-    }
+    List<WateringLogEntry> logEntries = LoadLogEntries();
 
-    List<string> logEntries = File.ReadAllLines(filePath).ToList();
     List<string> plantNames = new List<string>();
 
-    foreach (string entry in logEntries)
+    foreach (WateringLogEntry entry in logEntries)
     {
-        string[] entryParts =  entry.Split(";");
-        string plantName = entryParts[0];
+        string plantName = entry.PlantName;
 
         if (!plantNames.Contains(plantName))
         {
@@ -327,16 +351,13 @@ void DeleteWateringLog()
 
     for (int i = 0; i < logEntries.Count; i++)
         {
-            string entry = logEntries[i];
-
-            string[] entryParts = entry.Split(';');
-            string plantName = entryParts[0];
+            string plantName = logEntries[i].PlantName;
 
             if (plantName.ToLower() == searchedPlantName.ToLower())
             {
                 matchingIndexes.Add(i);
                 Console.WriteLine($"{matchingIndexes.Count}. ");
-                DisplayLog(entry);
+                DisplayLog(logEntries[i]);
             }
             
         }
@@ -370,7 +391,9 @@ void DeleteWateringLog()
 
     int realIndex = matchingIndexes[logToDelete - 1];
     logEntries.RemoveAt(realIndex);
-    File.WriteAllLines(filePath, logEntries);
+
+    SaveLogEntries(logEntries);
+
     Console.WriteLine("\nLog deleted successfully.\n");
 
 

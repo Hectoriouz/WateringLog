@@ -3,10 +3,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-string filePath = "wateringlog.txt";
-
 bool isRunning = true;
 WateringLogStorage storage = new WateringLogStorage();
+WateringLogService service = new WateringLogService();
 
 // Main program loop
 while (isRunning == true)
@@ -233,7 +232,7 @@ void DeleteWateringLog()
 
     List<WateringLogEntry> logEntries = storage.LoadLogEntries();
 
-    List<string> plantNames = GetPlantNames(logEntries);
+    List<string> plantNames = service.GetPlantNames(logEntries);
 
     for (int i = 0; i < plantNames.Count; i++)
     {
@@ -243,7 +242,7 @@ void DeleteWateringLog()
     Console.WriteLine("\n==================================\n");
 
     int? searchedPlant = InputHelper.GetIntWithCancel(
-        "\n0. Cancel\nEnter the number of the plant you want to delete logs for:"
+        "Enter the number of the plant you want to delete logs for:"
     );
 
     if (searchedPlant == null)
@@ -251,12 +250,10 @@ void DeleteWateringLog()
         return;
     }
 
-    while (searchedPlant > plantNames.Count)
-    {
-        Console.WriteLine("Please choose a plant from the list.");
-        
+    while (searchedPlant > plantNames.Count || searchedPlant <= 0)
+    {        
         searchedPlant = InputHelper.GetIntWithCancel(
-            "\n0. Cancel\nEnter the number of the plant you want to delete logs for:"
+            "Enter the number of the plant you want to delete logs for:"
         );
 
         if (searchedPlant == null)
@@ -267,25 +264,29 @@ void DeleteWateringLog()
     
     string searchedPlantName = plantNames[searchedPlant.Value-1];
 
-    List<int> matchingIndexes = GetMatchingIndexes(logEntries, searchedPlantName);
+    List<WateringLogEntry> matchingEntries = service.GetEntriesByPlant(logEntries, searchedPlantName);
 
-    int? userInputLogToDelete = InputHelper.GetIntWithCancel("\n0. Cancel\nEnter the number of the log you want to delete: ");
+    DisplayMatchingLogs(matchingEntries);
+
+    int? userInputLogToDelete = InputHelper.GetIntWithCancel("Enter the number of the log you want to delete: ");
 
     if (userInputLogToDelete == null)
     {
         return;
     }
 
-    while (userInputLogToDelete > matchingIndexes.Count || userInputLogToDelete < 0)
+    while (userInputLogToDelete > matchingEntries.Count || userInputLogToDelete <= 0)
     {
-        userInputLogToDelete = InputHelper.GetIntWithCancel("\n0. Cancel\nInvalid Input. Enter the number of the log you want to delete: ");
-
-        DisplayMatchingLogs(logEntries, matchingIndexes);
+        userInputLogToDelete = InputHelper.GetIntWithCancel("Invalid Input. Enter the number of the log you want to delete: ");
+        if (userInputLogToDelete == null)
+        {
+            return;
+        }
+        DisplayMatchingLogs(matchingEntries);
     }
     
 
-    int realIndex = matchingIndexes[userInputLogToDelete.Value - 1];
-    logEntries.RemoveAt(realIndex);
+    service.DeleteEntry(logEntries, matchingEntries[userInputLogToDelete.Value - 1]);
 
     storage.SaveLogEntries(logEntries);
 
@@ -295,61 +296,25 @@ void DeleteWateringLog()
     PressEnterToContinue();
 }
 
-// Get unique plant names from log entries
-List<string> GetPlantNames(List<WateringLogEntry> logEntries)
-{
-    List<string> plantNames = new List<string>();
-
-    foreach (WateringLogEntry entry in logEntries)
-    {
-        string plantName = entry.PlantName;
-
-        if (!plantNames.Contains(plantName))
-        {
-            plantNames.Add(plantName);
-        }
-    }
-
-    return plantNames;
-}
-
-List<int> GetMatchingIndexes(List<WateringLogEntry> logEntries, string searchedPlantName)
-{
-    List<int> matchingIndexes = new List<int>();
-
-    for (int i = 0; i < logEntries.Count; i++)
-    {
-        string plantName = logEntries[i].PlantName;
-
-        if (plantName.ToLower() == searchedPlantName.ToLower())
-        {
-            matchingIndexes.Add(i);
-        }
-    }
-
-    return matchingIndexes;
-}
-
 // Display log entry with index
 void DisplayLogWithIndex(WateringLogEntry entry, int index)
 {
+    Console.WriteLine("\n==================================\n");
     Console.WriteLine($"Log {index + 1}:");
     DisplayLog(entry);
 }
 
 // Display matching logs
-void DisplayMatchingLogs(List<WateringLogEntry> logEntries, List<int> matchingIndexes)
+void DisplayMatchingLogs(List<WateringLogEntry> matchingEntries)
 {
-    for (int i = 0; i < matchingIndexes.Count; i++)
+    for (int i = 0; i < matchingEntries.Count; i++)
     {
-        DisplayLogWithIndex(logEntries[matchingIndexes[i]], i);
+        DisplayLogWithIndex(matchingEntries[i], i);
     }
-
-    Console.WriteLine("\n0. To cancel");
 }
 
 // Get log to delete
-int? GetLogToDelete(List<int> matchingIndexes, List<WateringLogEntry> logEntries)
+int? GetLogToDelete(List<WateringLogEntry> matchingIndexes, List<WateringLogEntry> logEntries)
 {
     int? userInput = InputHelper.GetIntWithCancel(
         "\nEnter the number of the log you want to delete: "
@@ -359,7 +324,7 @@ int? GetLogToDelete(List<int> matchingIndexes, List<WateringLogEntry> logEntries
     {
         Console.WriteLine("Invalid input.");
 
-        DisplayMatchingLogs(logEntries, matchingIndexes);
+        DisplayMatchingLogs(matchingIndexes);
 
         userInput = InputHelper.GetIntWithCancel(
             "\nEnter the number of the log you want to delete: "

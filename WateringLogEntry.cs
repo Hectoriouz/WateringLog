@@ -100,12 +100,5 @@ using System;
             string normalized = input.Replace(",", ".");
             return double.Parse(normalized, System.Globalization.CultureInfo.InvariantCulture);
         }
-
-        // Method to try parsing a string into a double for water amount
-        public static bool TryParseWaterAmount(string input, out double result)
-        {
-            string normalized = input.Replace(",", ".");
-            return double.TryParse(normalized, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result);
-        }
     }
 

@@ -48,7 +48,6 @@ while (isRunning == true)
 // Menu
 string ShowMenu()
 {
-    // Vis menuen
     Console.WriteLine("==================================\n");
     Console.WriteLine("Watering Log\n");
     Console.WriteLine("\n");
@@ -61,10 +60,8 @@ string ShowMenu()
     Console.WriteLine("\n");
     Console.WriteLine("==================================\n");
 
-    // Læs brugerens valg
-    string choice = Console.ReadLine() ?? "";
+    string choice = InputHelper.GetString("");
 
-    // Giv valget tilbage
     return choice;
 }
 
@@ -76,47 +73,30 @@ void LogWatering()
     Console.WriteLine("Welcome!");
     Console.WriteLine("\n");
 
-    Console.WriteLine("Please enter the name of the plant you would like to log: ");
-    Console.WriteLine("\nType \"0\" to cancel");
-    string plantName = Console.ReadLine() ?? "";
+    string? plantName = InputHelper.GetStringWithCancel("Please enter the name of the plant you would like to log: ");
         
-    if (plantName == "0")
+    if (plantName == null)
         {
             return;
         }
 
-    Console.WriteLine("Please enter the date you watered the plant (DD/MM/YYYY): ");
-    Console.WriteLine("\nType \"0\" to cancel");
-    string dateInput = Console.ReadLine() ?? "";
+    DateTime? dateInput = InputHelper.GetDateWithCancel("Please enter the date you watered the plant (DD/MM/YYYY): ".ToString() ?? "");
 
-    if (dateInput == "0")
+    if (dateInput == null)
         {
             return;
         }
 
-    Console.WriteLine("Please enter the amount of water used in liters:");
-    Console.WriteLine("\nType \"Cancel\" to cancel");
-    string waterAmountInput = Console.ReadLine() ?? "";
+    double? waterAmountInput = InputHelper.GetDoubleWithCancel("Please enter the amount of water used in liters (e.g., 0.5): ");
 
-    if (waterAmountInput.ToLower() == "cancel")
+    if (waterAmountInput == null)
         {
             return;
-        }
-
-    double waterAmount;
-    bool isValidWaterAmount = WateringLogEntry.TryParseWaterAmount(waterAmountInput, out waterAmount);
-    while (!isValidWaterAmount)
-        {
-            Console.WriteLine("Invalid input. Please enter a valid number for the amount of water used in liters (e.g., 0.5):");
-            waterAmountInput = Console.ReadLine() ?? "";
-            isValidWaterAmount = WateringLogEntry.TryParseWaterAmount(waterAmountInput, out waterAmount);
         }
       
-    Console.WriteLine("Did you use fertilizer? (yes/no): ");
-    Console.WriteLine("\nType \"0\" to cancel");
-    string fertilizerInput = Console.ReadLine() ?? "";
+    bool? fertilizerInput = InputHelper.GetBoolWithCancel("Did you use fertilizer? (yes/no): ");
 
-    if (fertilizerInput == "0")
+    if (fertilizerInput == null)
         {
             return;
         }
@@ -124,27 +104,18 @@ void LogWatering()
     Console.WriteLine("Perfect! Here is the information you entered: \n");
     Console.WriteLine("==================================");
     Console.WriteLine($"Plant Name: {plantName}");
-    Console.WriteLine($"Date Watered: {dateInput}");
-    Console.WriteLine($"Amount of Water Used: {waterAmount} liters");
-    
-    if (fertilizerInput.ToLower() == "yes")
-        {
-            Console.WriteLine("Fertilizer Used: Yes");
-        }
-    else
-        {
-        Console.WriteLine("Fertilizer Used: No");
-        }
+    Console.WriteLine($"Date Watered: {dateInput.Value.ToString("yyyy-MM-dd HH:mm:ss")}");
+    Console.WriteLine($"Amount of Water Used: {waterAmountInput.Value} liters");
+    Console.WriteLine($"Fertilizer Used: {fertilizerInput.Value}");
     Console.WriteLine("==================================");
-
 
     List<WateringLogEntry> logEntries = LoadLogEntries();
 
     WateringLogEntry entry = new WateringLogEntry(
         plantName, 
-        DateTime.Parse(dateInput),
-        WateringLogEntry.ParseWaterAmount(waterAmountInput),  
-        fertilizerInput.ToLower() == "yes"
+        dateInput.Value,
+        waterAmountInput.Value,  
+        fertilizerInput.Value
     );
 
     logEntries.Add(entry);
@@ -181,8 +152,7 @@ void IntroTitle()
 
 void PressEnterToContinue()
 {
-    Console.WriteLine("\nPress Enter to continue...");
-    Console.ReadLine();
+    InputHelper.GetString("\nPress Enter to continue...");
 }
 
 // View latest watering log
@@ -266,10 +236,9 @@ void SearchPlant()
 
     while (!foundPlant)
     {
-        Console.WriteLine("Enter the name of the plant: ");
-        Console.WriteLine("\nType 0 to go back");
-        string userSearch = Console.ReadLine() ?? "";
-        if (userSearch == "0")
+        string? userSearch = InputHelper.GetStringWithCancel("Enter the name of the plant: ");
+
+        if (userSearch == null)
         {
             return;
         }
@@ -316,36 +285,32 @@ void DeleteWateringLog()
         Console.WriteLine($"{i + 1}. {plantNames[i]}");
     }
 
-    Console.WriteLine("\n0. Cancel");
-
-    Console.WriteLine("Here are the plants with a watering log, which one would you like to delete?");
-
-    string userSearch = Console.ReadLine() ?? "";
-
     Console.WriteLine("\n==================================\n");
 
-    int searchedPlant;
-    bool isValidSearchName = int.TryParse(userSearch, out searchedPlant);
-    while (!isValidSearchName || searchedPlant > plantNames.Count || searchedPlant < 0)
-    {
-        Console.WriteLine("\nInvalid input. \nPlease enter a valid number that matches the plant you want to show logs for");
-        userSearch = Console.ReadLine() ?? "";
-        isValidSearchName = int.TryParse(userSearch, out searchedPlant);
-        
-        for (int i = 0; i < plantNames.Count; i++)
-        {
-        Console.WriteLine("\n");
-        Console.WriteLine($"{i + 1}. {plantNames[i]}");
-        }
-        Console.WriteLine("\n0. Cancel");
-    }
+    int? searchedPlant = InputHelper.GetIntWithCancel(
+        "\n0. Cancel\nEnter the number of the plant you want to delete logs for:"
+    );
 
-    if (searchedPlant == 0)
+    if (searchedPlant == null)
     {
         return;
     }
+
+    while (searchedPlant > plantNames.Count)
+    {
+        Console.WriteLine("Please choose a plant from the list.");
+        
+        searchedPlant = InputHelper.GetIntWithCancel(
+            "\n0. Cancel\nEnter the number of the plant you want to delete logs for:"
+        );
+
+        if (searchedPlant == null)
+        {
+            return;
+        }
+    }
     
-    string searchedPlantName = plantNames[searchedPlant-1];
+    string searchedPlantName = plantNames[searchedPlant.Value-1];
 
     List<int> matchingIndexes = new List<int>();
 
@@ -355,31 +320,24 @@ void DeleteWateringLog()
 
             if (plantName.ToLower() == searchedPlantName.ToLower())
             {
+                Console.WriteLine("\n==================================\n");
                 matchingIndexes.Add(i);
                 Console.WriteLine($"{matchingIndexes.Count}. ");
                 DisplayLog(logEntries[i]);
             }
             
         }
-    Console.WriteLine("\n0. Cancel");
-    Console.WriteLine("\nWhich log would you like to delete?\n");
 
-    string userInputLogToDelete = Console.ReadLine() ?? "";
+    int? userInputLogToDelete = InputHelper.GetIntWithCancel("\n0. Cancel\nEnter the number of the log you want to delete: ");
 
-    int logToDelete;
-
-    bool isValidSearchName2 = int.TryParse(userInputLogToDelete, out logToDelete);
-
-    if (logToDelete == 0)
+    if (userInputLogToDelete == null)
     {
         return;
     }
 
-    while (!isValidSearchName2 || logToDelete > matchingIndexes.Count || logToDelete < 0)
+    while (userInputLogToDelete > matchingIndexes.Count || userInputLogToDelete < 0)
     {
-        Console.WriteLine("\nInvalid input. \nPlease enter a valid number that matches the plant you want to show logs for");
-        userInputLogToDelete = Console.ReadLine() ?? "";
-        isValidSearchName2 = int.TryParse(userInputLogToDelete, out logToDelete);
+        userInputLogToDelete = InputHelper.GetIntWithCancel("\n0. Cancel\nInvalid Input. Enter the number of the log you want to delete: ");
 
         for (int i = 0; i < matchingIndexes.Count; i++)
         {
@@ -389,7 +347,7 @@ void DeleteWateringLog()
         }
     }
 
-    int realIndex = matchingIndexes[logToDelete - 1];
+    int realIndex = matchingIndexes[userInputLogToDelete.Value - 1];
     logEntries.RemoveAt(realIndex);
 
     SaveLogEntries(logEntries);
@@ -399,3 +357,4 @@ void DeleteWateringLog()
 
     PressEnterToContinue();
 }
+

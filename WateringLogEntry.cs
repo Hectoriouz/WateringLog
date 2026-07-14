@@ -88,10 +88,24 @@ using System;
             WateringLogEntry entry = new WateringLogEntry(
                 logParts[0], 
                 DateTime.Parse(logParts[1]),
-                double.Parse(logParts[2]),  
+                ParseWaterAmount(logParts[2]),  
                 bool.Parse(logParts[3])
             );
             return entry;
+        }
+
+        // Method to parse a string into a double for water amount
+        public static double ParseWaterAmount(string input)
+        {
+            string normalized = input.Replace(",", ".");
+            return double.Parse(normalized, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        // Method to try parsing a string into a double for water amount
+        public static bool TryParseWaterAmount(string input, out double result)
+        {
+            string normalized = input.Replace(",", ".");
+            return double.TryParse(normalized, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result);
         }
     }
 

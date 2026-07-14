@@ -104,12 +104,12 @@ void LogWatering()
         }
 
     double waterAmount;
-    bool isValidWaterAmount = double.TryParse(waterAmountInput, out waterAmount);
+    bool isValidWaterAmount = WateringLogEntry.TryParseWaterAmount(waterAmountInput, out waterAmount);
     while (!isValidWaterAmount)
         {
             Console.WriteLine("Invalid input. Please enter a valid number for the amount of water used in liters (e.g., 0.5):");
             waterAmountInput = Console.ReadLine() ?? "";
-            isValidWaterAmount = double.TryParse(waterAmountInput, out waterAmount);
+            isValidWaterAmount = WateringLogEntry.TryParseWaterAmount(waterAmountInput, out waterAmount);
         }
       
     Console.WriteLine("Did you use fertilizer? (yes/no): ");
@@ -143,7 +143,7 @@ void LogWatering()
     WateringLogEntry entry = new WateringLogEntry(
         plantName, 
         DateTime.Parse(dateInput),
-        int.Parse(waterAmountInput),  
+        WateringLogEntry.ParseWaterAmount(waterAmountInput),  
         fertilizerInput.ToLower() == "yes"
     );
 

@@ -207,20 +207,17 @@ void SearchPlant()
             return;
         }
 
-        foreach (WateringLogEntry entry in logEntries)
-        {
-            if (entry.PlantName.ToLower() == userSearch.ToLower())
-            {
-                DisplayLog(entry);
-                foundPlant = true;
-            }
-        }
+        List<WateringLogEntry> matchingEntries = service.GetEntriesByPlant(logEntries, userSearch);
 
-        if (!foundPlant)
+        if (matchingEntries.Count == 0)
         {
             Console.WriteLine("No logs found for that plant.");
         }
-
+        else
+        {
+            DisplayMatchingLogs(matchingEntries);
+            foundPlant = true;
+        }
     }   
     PressEnterToContinue();
 }
@@ -268,23 +265,12 @@ void DeleteWateringLog()
 
     DisplayMatchingLogs(matchingEntries);
 
-    int? userInputLogToDelete = InputHelper.GetIntWithCancel("Enter the number of the log you want to delete: ");
+    int? userInputLogToDelete = GetLogToDelete(matchingEntries);
 
     if (userInputLogToDelete == null)
     {
         return;
     }
-
-    while (userInputLogToDelete > matchingEntries.Count || userInputLogToDelete <= 0)
-    {
-        userInputLogToDelete = InputHelper.GetIntWithCancel("Invalid Input. Enter the number of the log you want to delete: ");
-        if (userInputLogToDelete == null)
-        {
-            return;
-        }
-        DisplayMatchingLogs(matchingEntries);
-    }
-    
 
     service.DeleteEntry(logEntries, matchingEntries[userInputLogToDelete.Value - 1]);
 
@@ -314,13 +300,13 @@ void DisplayMatchingLogs(List<WateringLogEntry> matchingEntries)
 }
 
 // Get log to delete
-int? GetLogToDelete(List<WateringLogEntry> matchingIndexes, List<WateringLogEntry> logEntries)
+int? GetLogToDelete(List<WateringLogEntry> matchingIndexes)
 {
     int? userInput = InputHelper.GetIntWithCancel(
         "\nEnter the number of the log you want to delete: "
     );
 
-    while (userInput > matchingIndexes.Count || userInput < 0)
+    while (userInput > matchingIndexes.Count || userInput <= 0)
     {
         Console.WriteLine("Invalid input.");
 

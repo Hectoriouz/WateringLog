@@ -10,7 +10,7 @@ public class WateringLogService
 
         foreach (WateringLogEntry entry in logEntries)
         {
-            if (searchedPlantName.ToLower() == entry.PlantName.ToLower())
+            if (searchedPlantName.Trim().ToLower() == entry.PlantName.Trim().ToLower())
             {
                 matchingEntries.Add(entry);
             }
@@ -36,5 +36,11 @@ public class WateringLogService
 
         return plantNames;
     }
+
+    public void DeleteEntry(List<WateringLogEntry> logEntries, WateringLogEntry entry)
+    {
+        logEntries.Remove(entry);
+    }
+
 }
 

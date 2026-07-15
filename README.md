@@ -1,19 +1,28 @@
-# 🌱 WateringLog
+# WateringLog
 
-WateringLog is a simple C# console application for keeping track of plant watering.
+WateringLog is a C# console application for keeping track of plant watering.
 
-This project was created as a learning project while studying C# and .NET. The goal is not only to build a useful application, but also to practice programming concepts such as methods, loops, arrays, file handling, input validation, and software design.
+This is a learning project built while studying C# and .NET. The focus has been on object-oriented design, file handling, input validation, and separating responsibilities across classes.
 
-## ✨ Features
+## Features
 
 - Add a new watering log
 - View all watering logs
 - View the latest watering log
 - Search logs by plant name
+- Delete a specific log
 - Save logs to a text file
-- Input validation for numeric values
+- Input validation for numeric values, dates, and booleans, with cancel support
 
-## 📂 Log Format
+## Project Structure
+
+- `WateringLogEntry.cs` - Represents a single watering entry (PlantName, WateringDate, WaterAmount, FertilizerUsed), including parsing to/from file format.
+- `WateringLogStorage.cs` - Loads and saves log entries to file.
+- `WateringLogService.cs` - Business logic such as finding entries by plant name, retrieving unique plant names, and deleting entries.
+- `InputHelper.cs` - Handles user input and validation, including cancel-supported input.
+- `Program.cs` - Controls UI and user flow, delegating logic to the classes above.
+
+## Log Format
 
 Each watering entry is stored in a text file (`wateringlog.txt`) using the following format:
 
@@ -27,44 +36,36 @@ Example:
 Tomato;02/07/2026;1.5;yes
 ```
 
-## 🛠 Built With
+## Built With
 
 - C#
 - .NET
 - Visual Studio Code
 
-## 📚 What I Learned
+## What I Learned
 
-This project has helped me practice:
+- Object-oriented design: classes, responsibilities, encapsulation
+- Separating UI, business logic, and data access into distinct layers
+- Refactoring from procedural code (arrays, indexes) to OOP (`List<T>`, objects)
+- Input validation with cancel support
+- File handling and custom serialization/parsing (`ToString()` / `Parse()`)
+- Identifying and removing duplicated logic
+- Finding and fixing bugs: off-by-one errors, unused parameters, whitespace/case handling
 
-- Variables
-- Methods
-- Switch statements
-- While loops
-- Arrays
-- File handling
-- Input validation with `TryParse()`
-- Refactoring duplicated code
-- Breaking problems into smaller methods
-
-## 🚀 Future Improvements
-
-Planned features include:
+## Future Improvements
 
 - Edit existing logs
-- Delete logs
 - Statistics (total water used, number of logs, etc.)
 - Sort logs
-- Store data using classes instead of plain text
-- Replace arrays with `List<T>`
+- Store data in a SQL database instead of a text file
 - Better date validation
 
-## ▶️ Running the Project
+## Running the Project
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/WateringLog.git
+git clone https://github.com/Hectoriouz/WateringLog.git
 ```
 
 Navigate to the project:
@@ -79,6 +80,6 @@ Run the application:
 dotnet run
 ```
 
-## 👨‍💻 About
+## About
 
-This project is part of my journey learning C# and software development through Codecademy and personal projects.
+Part of my journey learning C# and software development through Codecademy and personal projects.

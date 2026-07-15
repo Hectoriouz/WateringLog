@@ -69,7 +69,6 @@ string ShowMenu()
 // Log new watering
 void LogWatering()
 {
-// Log new watering
     IntroTitle();
     Console.WriteLine("Welcome!");
     Console.WriteLine("\n");
@@ -125,7 +124,6 @@ void LogWatering()
 
     Console.WriteLine("Log saved to file!");
     PressEnterToContinue();
-    
 }    
 
 // View watering logs
@@ -189,7 +187,6 @@ void DisplayLog(WateringLogEntry entry)
     Console.WriteLine($"Fertilizer Used: {entry.FertilizerUsed}");
     Console.WriteLine("----------------------------------");
 }
-
 
 // Search for specific plant logs
 void SearchPlant()
